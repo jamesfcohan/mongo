@@ -165,6 +165,11 @@ public:
     Decimal128 toAbs() const;
 
     /**
+     * Computes the log of the caller with the given base.
+     */
+    Decimal128 log(Decimal128 base, RoundingMode roundMode = kRoundTiesToEven) const;
+
+    /**
      * This set of functions converts a Decimal128 to a certain integer type with a
      * given rounding mode.
      *

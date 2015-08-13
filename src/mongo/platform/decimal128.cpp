@@ -264,6 +264,16 @@ Decimal128 Decimal128::toAbs() const {
     return Decimal128(libraryTypeToValue(dec128));
 }
 
+Decimal128 Decimal128::log(Decimal128 base, RoundingMode roundMode) const {
+    std::uint32_t throwAwayFlag = 0;
+
+    BID_UINT128  logcurrent = bid128_log(decimal128ToLibraryType(_value), roundMode, &throwAwayFlag);
+    BID_UINT128  logbase = bid128_log(decimal128ToLibraryType(base.getValue()), roundMode, &throwAwayFlag);
+    BID_UINT128 result = bid128_div(logcurrent, logbase, roundMode, &throwAwayFlag);
+
+    return Decimal128(libraryTypeToValue(result));
+}
+
 std::int32_t Decimal128::toInt(RoundingMode roundMode) const {
     std::uint32_t throwAwayFlag = 0;
     return toInt(&throwAwayFlag, roundMode);

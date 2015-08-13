@@ -361,7 +361,10 @@ intrusive_ptr<Expression> Expression::parseOperand(BSONElement exprElement,
 
 Value ExpressionAbs::evaluateNumericArg(const Value& numericArg) const {
     BSONType type = numericArg.getType();
-    if (type == NumberDouble) {
+    if (type == NumberDecimal) {
+        return Value(numericArg.getDecimal().toAbs());
+    }
+    else if (type == NumberDouble) {
         return Value(std::abs(numericArg.getDouble()));
     } else {
         long long num = numericArg.getLong();
@@ -2120,6 +2123,13 @@ Value ExpressionLog::evaluateInternal(Variables* vars) const {
             str::stream() << "$log's base must be a positive number not equal to 1, but is "
                           << baseDouble,
             (baseDouble > 0 && baseDouble != 1) || std::isnan(baseDouble));
+
+    if(argVal.getType() == NumberDecimal || baseVal.getType() == NumberDecimal) {
+        Decimal128 argDecimal = argVal.coerceToDecimal();
+        Decimal128 baseDecimal = baseVal.coerceToDecimal();
+        return Value(argDecimal.log(baseDecimal));
+    }
+
     return Value(std::log(argDouble) / std::log(baseDouble));
 }
 

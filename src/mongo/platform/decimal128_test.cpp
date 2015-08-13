@@ -282,6 +282,14 @@ TEST(Decimal128Test, TestAbsValueNeg) {
     ASSERT_TRUE(dAbs.isEqual(Decimal128(25)));
 }
 
+// Tests for log function.
+TEST(Decimal128Test, TestsLog) {
+    Decimal128 d(5);
+    Decimal128 b(5);
+    Decimal128 result = d.log(b);
+    ASSERT_TRUE(result.isEqual(Decimal128(1)));
+}
+
 
 // Tests for Decimal128 conversions
 TEST(Decimal128Test, TestDecimal128ToInt32Even) {

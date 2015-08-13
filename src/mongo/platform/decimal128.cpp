@@ -267,10 +267,87 @@ Decimal128 Decimal128::toAbs() const {
 Decimal128 Decimal128::log(Decimal128 base, RoundingMode roundMode) const {
     std::uint32_t throwAwayFlag = 0;
 
-    BID_UINT128  logcurrent = bid128_log(decimal128ToLibraryType(_value), roundMode, &throwAwayFlag);
-    BID_UINT128  logbase = bid128_log(decimal128ToLibraryType(base.getValue()), roundMode, &throwAwayFlag);
-    BID_UINT128 result = bid128_div(logcurrent, logbase, roundMode, &throwAwayFlag);
+    BID_UINT128 logCurrent =
+        bid128_log10(decimal128ToLibraryType(_value), roundMode, &throwAwayFlag);
+    BID_UINT128 logBase =
+        bid128_log10(decimal128ToLibraryType(base.getValue()), roundMode, &throwAwayFlag);
+    BID_UINT128 result = bid128_div(logCurrent, logBase, roundMode, &throwAwayFlag);
 
+    return Decimal128(libraryTypeToValue(result));
+}
+
+Decimal128 Decimal128::loge(RoundingMode roundMode) const {
+    std::uint32_t throwAwayFlag = 0;
+
+    BID_UINT128 result = bid128_log(
+        decimal128ToLibraryType(_value), RoundingMode::kRoundTowardPositive, &throwAwayFlag);
+    return Decimal128(libraryTypeToValue(result));
+}
+
+Decimal128 Decimal128::log10(RoundingMode roundMode) const {
+    std::uint32_t throwAwayFlag = 0;
+
+    BID_UINT128 result = bid128_log10(
+        decimal128ToLibraryType(_value), RoundingMode::kRoundTowardPositive, &throwAwayFlag);
+    return Decimal128(libraryTypeToValue(result));
+}
+
+Decimal128 Decimal128::ceil() const {
+    std::uint32_t throwAwayFlag = 0;
+
+    BID_UINT128 result =
+        bid128_round_integral_positive(decimal128ToLibraryType(_value), &throwAwayFlag);
+    return Decimal128(libraryTypeToValue(result));
+}
+Decimal128 Decimal128::trunc() const {
+    std::uint32_t throwAwayFlag = 0;
+
+    if (isGreaterEqual(Decimal128(0))) {
+        BID_UINT128 result =
+            bid128_round_integral_negative(decimal128ToLibraryType(_value), &throwAwayFlag);
+        return Decimal128(libraryTypeToValue(result));
+    }
+    BID_UINT128 result =
+        bid128_round_integral_positive(decimal128ToLibraryType(_value), &throwAwayFlag);
+    return Decimal128(libraryTypeToValue(result));
+}
+Decimal128 Decimal128::floor() const {
+    std::uint32_t throwAwayFlag = 0;
+
+    BID_UINT128 result =
+        bid128_round_integral_negative(decimal128ToLibraryType(_value), &throwAwayFlag);
+    return Decimal128(libraryTypeToValue(result));
+}
+
+Decimal128 Decimal128::mod(Decimal128 m) const {
+    std::uint32_t throwAwayFlag = 0;
+
+    BID_UINT128 result = bid128_fmod(
+        decimal128ToLibraryType(_value), decimal128ToLibraryType(m.getValue()), &throwAwayFlag);
+    return Decimal128(libraryTypeToValue(result));
+}
+
+Decimal128 Decimal128::squareRoot(RoundingMode roundMode) const {
+    std::uint32_t throwAwayFlag = 0;
+
+    BID_UINT128 result = bid128_sqrt(decimal128ToLibraryType(_value), roundMode, &throwAwayFlag);
+    return Decimal128(libraryTypeToValue(result));
+}
+
+Decimal128 Decimal128::pow(Decimal128 power, RoundingMode roundMode) const {
+    std::uint32_t throwAwayFlag = 0;
+
+    BID_UINT128 result = bid128_pow(decimal128ToLibraryType(_value),
+                                    decimal128ToLibraryType(power.getValue()),
+                                    roundMode,
+                                    &throwAwayFlag);
+    return Decimal128(libraryTypeToValue(result));
+}
+
+Decimal128 Decimal128::exp(RoundingMode roundMode) const {
+    std::uint32_t throwAwayFlag = 0;
+
+    BID_UINT128 result = bid128_exp(decimal128ToLibraryType(_value), roundMode, &throwAwayFlag);
     return Decimal128(libraryTypeToValue(result));
 }
 

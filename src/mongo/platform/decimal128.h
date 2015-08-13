@@ -165,9 +165,43 @@ public:
     Decimal128 toAbs() const;
 
     /**
-     * Computes the log of the caller with the given base.
+     * This set of functions returns the logarithm of the caller base, e, or 10
      */
     Decimal128 log(Decimal128 base, RoundingMode roundMode = kRoundTiesToEven) const;
+    Decimal128 loge(RoundingMode roundMode = kRoundTiesToEven) const;
+    Decimal128 log10(RoundingMode roundMode = kRoundTiesToEven) const;
+
+    /**
+     * This set of functions compute rounding on decimals
+     */
+    Decimal128 ceil() const;
+    Decimal128 trunc() const;
+    Decimal128 floor() const;
+
+    /**
+     * This function returns the floating point modulus of the caller
+     */
+    Decimal128 mod(Decimal128 m) const;
+
+    /**
+     * This function returns the square root of the caller
+     */
+    Decimal128 squareRoot(RoundingMode roundMode = kRoundTiesToEven) const;
+
+    /**
+     * This function returns the value of caller^power
+     */
+    Decimal128 pow(Decimal128 power, RoundingMode roundMode = kRoundTiesToEven) const;
+
+    /**
+     * This function returns the value of e^caller
+     */
+    Decimal128 exp(RoundingMode roundMode = kRoundTiesToEven) const;
+
+    /**
+     * This function returns the standard deviation
+     */
+     //TODO
 
     /**
      * This set of functions converts a Decimal128 to a certain integer type with a

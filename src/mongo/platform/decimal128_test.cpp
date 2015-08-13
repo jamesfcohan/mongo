@@ -282,14 +282,165 @@ TEST(Decimal128Test, TestAbsValueNeg) {
     ASSERT_TRUE(dAbs.isEqual(Decimal128(25)));
 }
 
-// Tests for log function.
-TEST(Decimal128Test, TestsLog) {
+// Tests for log functions
+TEST(Decimal128Test, TestCustomBaseLog1) {
     Decimal128 d(5);
     Decimal128 b(5);
     Decimal128 result = d.log(b);
     ASSERT_TRUE(result.isEqual(Decimal128(1)));
 }
 
+TEST(Decimal128Test, TestCustomBaseLog2) {
+    Decimal128 d(16);
+    Decimal128 b(2);
+    Decimal128 result = d.log(b);
+    ASSERT_TRUE(result.isEqual(Decimal128(4)));
+}
+
+TEST(Decimal128Test, TestCustomBaseLog3) {
+    Decimal128 d(81);
+    Decimal128 b(3);
+    Decimal128 result = d.log(b);
+    ASSERT_TRUE(result.isEqual(Decimal128(4)));
+}
+
+TEST(Decimal128Test, TestCustomBaseLog4) {
+    Decimal128 d("235.6");
+    Decimal128 b(6);
+    Decimal128 result = d.log(b);
+    ASSERT_TRUE(result.isEqual(Decimal128("3.048475839299282352918570852361478")));
+}
+
+TEST(Decimal128Test, TestBaseELog1) {
+    Decimal128 d(514);
+    Decimal128 result = d.loge();
+    ASSERT_TRUE(result.isEqual(Decimal128("6.242223265455165107769026436219432")));
+}
+
+TEST(Decimal128Test, TestBase10Log1) {
+    Decimal128 d(1000);
+    Decimal128 result = d.log10();
+    ASSERT_TRUE(result.isEqual(Decimal128(3)));
+}
+
+TEST(Decimal128Test, TestBase10Log2) {
+    Decimal128 d(514);
+    Decimal128 result = d.log10();
+    ASSERT_TRUE(result.isEqual(Decimal128("2.710963118995275732376634360644125")));
+}
+
+// Tests for rounding functions
+TEST(Decimal128Test, TestCeilPositive) {
+    Decimal128 d("1.5");
+    Decimal128 result = d.ceil();
+    ASSERT_TRUE(result.isEqual(Decimal128(2)));
+}
+
+TEST(Decimal128Test, TestCeilNegative) {
+    Decimal128 d("-1.5");
+    Decimal128 result = d.ceil();
+    ASSERT_TRUE(result.isEqual(Decimal128(-1)));
+}
+
+TEST(Decimal128Test, TestTruncPositive) {
+    Decimal128 d("1.2");
+    Decimal128 result = d.trunc();
+    ASSERT_TRUE(result.isEqual(Decimal128(1)));
+}
+
+TEST(Decimal128Test, TestTruncNegative) {
+    Decimal128 d("-1.5");
+    Decimal128 result = d.trunc();
+    ASSERT_TRUE(result.isEqual(Decimal128(-1)));
+}
+
+TEST(Decimal128Test, TestFloorPositive) {
+    Decimal128 d("1.7");
+    Decimal128 result = d.floor();
+    ASSERT_TRUE(result.isEqual(Decimal128(1)));
+}
+
+TEST(Decimal128Test, TestFloorNegative) {
+    Decimal128 d("-1.7");
+    Decimal128 result = d.floor();
+    ASSERT_TRUE(result.isEqual(Decimal128(-2)));
+}
+
+// Tests for square root
+TEST(Decimal128Test, TestSquareRootPositive) {
+    Decimal128 d(81);
+    Decimal128 result = d.squareRoot();
+    ASSERT_TRUE(result.isEqual(Decimal128(9)));
+}
+
+TEST(Decimal128Test, TestSquareRootNegative) {
+    Decimal128 d(-81);
+    Decimal128 result = d.squareRoot();
+    ASSERT_TRUE(result.isNaN());
+}
+
+TEST(Decimal128Test, TestSquareRootFractional) {
+    Decimal128 d(514);
+    Decimal128 result = d.squareRoot();
+    ASSERT_TRUE(result.isEqual(Decimal128("22.67156809750926778624095818584650")));
+}
+
+// Tests for mod
+TEST(Decimal128Test, TestModWhole) {
+    Decimal128 d(16);
+    Decimal128 m(5);
+    Decimal128 result = d.mod(m);
+    ASSERT_TRUE(result.isEqual(Decimal128(1)));
+}
+
+TEST(Decimal128Test, TestModOneFactional) {
+    Decimal128 d("514.672");
+    Decimal128 m(10);
+    Decimal128 result = d.mod(m);
+    ASSERT_TRUE(result.isEqual(Decimal128("4.672")));
+}
+
+TEST(Decimal128Test, TestModBothFactional) {
+    Decimal128 d("514.672");
+    Decimal128 m("10.1");
+    Decimal128 result = d.mod(m);
+    ASSERT_TRUE(result.isEqual(Decimal128("9.672")));
+}
+
+// Tests for pow
+TEST(Decimal128Test, TestPowPostive) {
+    Decimal128 d(10);
+    Decimal128 m(10);
+    Decimal128 result = d.pow(m);
+    ASSERT_TRUE(result.isEqual(Decimal128("10000000000")));
+}
+
+TEST(Decimal128Test, TestPowOneNegative) {
+    Decimal128 d("3.25");
+    Decimal128 m("-50.2");
+    Decimal128 result = d.pow(m);
+    ASSERT_TRUE(result.isEqual(Decimal128("2.011200085758991296399064413330525E-26")));
+}
+
+TEST(Decimal128Test, TestPowBothNegative) {
+    Decimal128 d(-2);
+    Decimal128 m(-2);
+    Decimal128 result = d.pow(m);
+    ASSERT_TRUE(result.isEqual(Decimal128("0.25")));
+}
+
+// Tests for exp
+TEST(Decimal128Test, TestExp) {
+    Decimal128 d(10);
+    Decimal128 result = d.exp();
+    ASSERT_TRUE(result.isEqual(Decimal128("22026.46579480671651695790064528425")));
+}
+
+TEST(Decimal128Test, TestExpNegative) {
+    Decimal128 d(-10);
+    Decimal128 result = d.exp();
+    ASSERT_TRUE(result.isEqual(Decimal128("0.00004539992976248485153559151556055061")));
+}
 
 // Tests for Decimal128 conversions
 TEST(Decimal128Test, TestDecimal128ToInt32Even) {

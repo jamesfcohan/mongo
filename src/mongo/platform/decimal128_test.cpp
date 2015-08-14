@@ -313,7 +313,7 @@ TEST(Decimal128Test, TestCustomBaseLog4) {
 
 TEST(Decimal128Test, TestBaseELog1) {
     Decimal128 d(514);
-    Decimal128 result = d.loge();
+    Decimal128 result = d.ln();
     ASSERT_TRUE(result.isEqual(Decimal128("6.242223265455165107769026436219432")));
 }
 

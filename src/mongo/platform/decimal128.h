@@ -168,7 +168,7 @@ public:
      * This set of functions returns the logarithm of the caller base, e, or 10
      */
     Decimal128 log(Decimal128 base, RoundingMode roundMode = kRoundTiesToEven) const;
-    Decimal128 loge(RoundingMode roundMode = kRoundTiesToEven) const;
+    Decimal128 ln(RoundingMode roundMode = kRoundTiesToEven) const;
     Decimal128 log10(RoundingMode roundMode = kRoundTiesToEven) const;
 
     /**

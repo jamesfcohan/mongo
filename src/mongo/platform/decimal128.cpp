@@ -276,7 +276,7 @@ Decimal128 Decimal128::log(Decimal128 base, RoundingMode roundMode) const {
     return Decimal128(libraryTypeToValue(result));
 }
 
-Decimal128 Decimal128::loge(RoundingMode roundMode) const {
+Decimal128 Decimal128::ln(RoundingMode roundMode) const {
     std::uint32_t throwAwayFlag = 0;
 
     BID_UINT128 result = bid128_log(

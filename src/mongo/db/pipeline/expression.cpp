@@ -392,6 +392,7 @@ Value ExpressionAdd::evaluateInternal(Variables* vars) const {
      */
     double doubleTotal = 0;
     long long longTotal = 0;
+    Decimal128 decimalTotal = 0;
     BSONType totalType = NumberInt;
     bool haveDate = false;
 
@@ -402,6 +403,7 @@ Value ExpressionAdd::evaluateInternal(Variables* vars) const {
         if (val.numeric()) {
             totalType = Value::getWidestNumeric(totalType, val.getType());
 
+            decimalTotal = decimalTotal.add(val.coerceToDecimal());
             doubleTotal += val.coerceToDouble();
             longTotal += val.coerceToLong();
         } else if (val.getType() == Date) {
@@ -409,7 +411,7 @@ Value ExpressionAdd::evaluateInternal(Variables* vars) const {
             haveDate = true;
 
             // We don't manipulate totalType here.
-
+            decimalTotal = decimalTotal.add(Decimal128(val.getDate()));
             longTotal += val.getDate();
             doubleTotal += val.getDate();
         } else if (val.nullish()) {
@@ -424,6 +426,8 @@ Value ExpressionAdd::evaluateInternal(Variables* vars) const {
     if (haveDate) {
         if (totalType == NumberDouble)
             longTotal = static_cast<long long>(doubleTotal);
+        else if (totalType == NumberDecimal)
+            longTotal = decimalTotal.toLong();
         return Value(Date_t::fromMillisSinceEpoch(longTotal));
     } else if (totalType == NumberLong) {
         return Value(longTotal);
@@ -431,6 +435,8 @@ Value ExpressionAdd::evaluateInternal(Variables* vars) const {
         return Value(doubleTotal);
     } else if (totalType == NumberInt) {
         return Value::createIntOrLong(longTotal);
+    } else if (totalType == NumberDecimal) {
+        return Value(decimalTotal);
     } else {
         massert(16417, "$add resulted in a non-numeric type", false);
     }
@@ -626,6 +632,10 @@ const char* ExpressionArrayElemAt::getOpName() const {
 /* ------------------------- ExpressionCeil -------------------------- */
 
 Value ExpressionCeil::evaluateNumericArg(const Value& numericArg) const {
+    if (numericArg.getType() == NumberDecimal) {
+        return Value(numericArg.getDecimal().ceil());
+    }
+
     // There's no point in taking the ceiling of integers or longs, it will have no effect.
     return numericArg.getType() == NumberDouble ? Value(std::ceil(numericArg.getDouble()))
                                                 : numericArg;
@@ -1141,10 +1151,15 @@ Value ExpressionDivide::evaluateInternal(Variables* vars) const {
     Value rhs = vpOperand[1]->evaluateInternal(vars);
 
     if (lhs.numeric() && rhs.numeric()) {
+        uassert(16608, "can't $divide by zero", rhs.coerceToDouble() != 0);
+        if (lhs.getType() == NumberDecimal || rhs.getType() == NumberDecimal) {
+            Decimal128 numerDecimal = lhs.coerceToDecimal();
+            Decimal128 denomDecimal = rhs.coerceToDecimal();
+            return Value(numerDecimal.divide(denomDecimal));
+
+        }
         double numer = lhs.coerceToDouble();
         double denom = rhs.coerceToDouble();
-        uassert(16608, "can't $divide by zero", denom != 0);
-
         return Value(numer / denom);
     } else if (lhs.nullish() || rhs.nullish()) {
         return Value(BSONNULL);
@@ -1163,6 +1178,9 @@ const char* ExpressionDivide::getOpName() const {
 /* ----------------------- ExpressionExp ---------------------------- */
 
 Value ExpressionExp::evaluateNumericArg(const Value& numericArg) const {
+    if (numericArg.getType() == NumberDecimal) {
+        return Value(numericArg.getDecimal().exp());
+    }
     // exp() always returns a double since e is a double.
     return Value(exp(numericArg.coerceToDouble()));
 }
@@ -1673,6 +1691,10 @@ void ExpressionFilter::addDependencies(DepsTracker* deps, vector<string>* path) 
 /* ------------------------- ExpressionFloor -------------------------- */
 
 Value ExpressionFloor::evaluateNumericArg(const Value& numericArg) const {
+    if (numericArg.getType() == NumberDecimal) {
+        return Value(numericArg.getDecimal().floor());
+    }
+
     // There's no point in taking the floor of integers or longs, it will have no effect.
     return numericArg.getType() == NumberDouble ? Value(std::floor(numericArg.getDouble()))
                                                 : numericArg;
@@ -1968,7 +1990,9 @@ Value ExpressionMod::evaluateInternal(Variables* vars) const {
 
         uassert(16610, "can't $mod by 0", right != 0);
 
-        if (leftType == NumberDouble || (rightType == NumberDouble && !rhs.integral())) {
+        if (leftType == NumberDecimal || rightType == NumberDecimal) {
+            return Value (lhs.coerceToDecimal().mod(rhs.coerceToDecimal()));
+        } else if (leftType == NumberDouble || (rightType == NumberDouble && !rhs.integral())) {
             // Need to do fmod. Integer-valued double case is handled below.
 
             double left = lhs.coerceToDouble();
@@ -2021,6 +2045,7 @@ Value ExpressionMultiply::evaluateInternal(Variables* vars) const {
      */
     double doubleProduct = 1;
     long long longProduct = 1;
+    Decimal128 decimalProduct = 1;
     BSONType productType = NumberInt;
 
     const size_t n = vpOperand.size();
@@ -2032,6 +2057,7 @@ Value ExpressionMultiply::evaluateInternal(Variables* vars) const {
 
             doubleProduct *= val.coerceToDouble();
             longProduct *= val.coerceToLong();
+            decimalProduct = decimalProduct.multiply(val.coerceToDecimal());
         } else if (val.nullish()) {
             return Value(BSONNULL);
         } else {
@@ -2047,6 +2073,9 @@ Value ExpressionMultiply::evaluateInternal(Variables* vars) const {
         return Value(longProduct);
     else if (productType == NumberInt)
         return Value::createIntOrLong(longProduct);
+    else if (productType == NumberDecimal) {
+        return Value(decimalProduct);
+    }
     else
         massert(16418, "$multiply resulted in a non-numeric type", false);
 }
@@ -2091,6 +2120,11 @@ Value ExpressionLn::evaluateNumericArg(const Value& numericArg) const {
     uassert(28766,
             str::stream() << "$ln's argument must be a positive number, but is " << argDouble,
             argDouble > 0 || std::isnan(argDouble));
+
+    if(numericArg.getType() == NumberDecimal) {
+        return Value(numericArg.getDecimal().ln());
+    }
+
     return Value(std::log(argDouble));
 }
 
@@ -2145,6 +2179,11 @@ Value ExpressionLog10::evaluateNumericArg(const Value& numericArg) const {
     uassert(28761,
             str::stream() << "$log10's argument must be a positive number, but is " << argDouble,
             argDouble > 0 || std::isnan(argDouble));
+
+    if(numericArg.getType() == NumberDecimal) {
+        return Value(numericArg.getDecimal().log10());
+    }
+
     return Value(std::log10(argDouble));
 }
 
@@ -2353,6 +2392,10 @@ Value ExpressionPow::evaluateInternal(Variables* vars) const {
     uassert(28764,
             "$pow cannot take a base of 0 and a negative exponent",
             !(baseDouble == 0 && expDouble < 0));
+
+    if (baseType == NumberDecimal || expType == NumberDecimal) {
+        return Value(baseVal.coerceToDecimal().pow(expVal.coerceToDecimal()));
+    }
 
     // If either number is a double, return a double.
     if (baseType == NumberDouble || expType == NumberDouble) {
@@ -2850,6 +2893,9 @@ Value ExpressionSqrt::evaluateNumericArg(const Value& numericArg) const {
     uassert(28714,
             "$sqrt's argument must be greater than or equal to 0",
             argDouble >= 0 || std::isnan(argDouble));
+    if (numericArg.getType() == NumberDecimal) {
+        return Value(numericArg.getDecimal().squareRoot());
+    }
     return Value(sqrt(argDouble));
 }
 
@@ -2953,6 +2999,10 @@ Value ExpressionSubtract::evaluateInternal(Variables* vars) const {
         long long right = rhs.coerceToLong();
         long long left = lhs.coerceToLong();
         return Value::createIntOrLong(left - right);
+    } else if (diffType == NumberDecimal) {
+        Decimal128 right = rhs.coerceToDecimal();
+        Decimal128 left = lhs.coerceToDecimal();
+        return Value(left.subtract(right));
     } else if (lhs.nullish() || rhs.nullish()) {
         return Value(BSONNULL);
     } else if (lhs.getType() == Date) {
@@ -3010,6 +3060,10 @@ const char* ExpressionToUpper::getOpName() const {
 /* ------------------------- ExpressionTrunc -------------------------- */
 
 Value ExpressionTrunc::evaluateNumericArg(const Value& numericArg) const {
+    if (numericArg.getType() == NumberDecimal) {
+        return Value(numericArg.getDecimal().trunc());
+    }
+
     // There's no point in truncating integers or longs, it will have no effect.
     return numericArg.getType() == NumberDouble ? Value(std::trunc(numericArg.getDouble()))
                                                 : numericArg;

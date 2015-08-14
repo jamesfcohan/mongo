@@ -185,6 +185,7 @@ private:
     BSONType totalType;
     long long longTotal;
     double doubleTotal;
+    Decimal128 decimalTotal;
 };
 
 

@@ -55,9 +55,13 @@ void AccumulatorSum::processInternal(const Value& input, bool merging) {
         long long v = input.coerceToLong();
         longTotal += v;
         doubleTotal += v;
+        decimalTotal = decimalTotal.add(Decimal128(v));
     } else if (totalType == NumberDouble) {
         double v = input.coerceToDouble();
         doubleTotal += v;
+        decimalTotal = decimalTotal.add(Decimal128(v));
+    } else if (totalType == NumberDecimal) {
+        decimalTotal = decimalTotal.add(input.coerceToDecimal());
     } else {
         // non numerics should have returned above so we should never get here
         verify(false);
@@ -75,6 +79,8 @@ Value AccumulatorSum::getValue(bool toBeMerged) const {
         return Value(doubleTotal);
     } else if (totalType == NumberInt) {
         return Value::createIntOrLong(longTotal);
+    } else if (totalType == NumberDecimal) {
+        return Value(decimalTotal);
     } else {
         massert(16000, "$sum resulted in a non-numeric type", false);
     }
@@ -89,5 +95,6 @@ void AccumulatorSum::reset() {
     totalType = NumberInt;
     longTotal = 0;
     doubleTotal = 0;
+    decimalTotal = 0;
 }
 }

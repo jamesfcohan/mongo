@@ -363,8 +363,7 @@ Value ExpressionAbs::evaluateNumericArg(const Value& numericArg) const {
     BSONType type = numericArg.getType();
     if (type == NumberDecimal) {
         return Value(numericArg.getDecimal().toAbs());
-    }
-    else if (type == NumberDouble) {
+    } else if (type == NumberDouble) {
         return Value(std::abs(numericArg.getDouble()));
     } else {
         long long num = numericArg.getLong();
@@ -1156,7 +1155,6 @@ Value ExpressionDivide::evaluateInternal(Variables* vars) const {
             Decimal128 numerDecimal = lhs.coerceToDecimal();
             Decimal128 denomDecimal = rhs.coerceToDecimal();
             return Value(numerDecimal.divide(denomDecimal));
-
         }
         double numer = lhs.coerceToDouble();
         double denom = rhs.coerceToDouble();
@@ -1991,7 +1989,7 @@ Value ExpressionMod::evaluateInternal(Variables* vars) const {
         uassert(16610, "can't $mod by 0", right != 0);
 
         if (leftType == NumberDecimal || rightType == NumberDecimal) {
-            return Value (lhs.coerceToDecimal().mod(rhs.coerceToDecimal()));
+            return Value(lhs.coerceToDecimal().mod(rhs.coerceToDecimal()));
         } else if (leftType == NumberDouble || (rightType == NumberDouble && !rhs.integral())) {
             // Need to do fmod. Integer-valued double case is handled below.
 
@@ -2075,8 +2073,7 @@ Value ExpressionMultiply::evaluateInternal(Variables* vars) const {
         return Value::createIntOrLong(longProduct);
     else if (productType == NumberDecimal) {
         return Value(decimalProduct);
-    }
-    else
+    } else
         massert(16418, "$multiply resulted in a non-numeric type", false);
 }
 
@@ -2121,7 +2118,7 @@ Value ExpressionLn::evaluateNumericArg(const Value& numericArg) const {
             str::stream() << "$ln's argument must be a positive number, but is " << argDouble,
             argDouble > 0 || std::isnan(argDouble));
 
-    if(numericArg.getType() == NumberDecimal) {
+    if (numericArg.getType() == NumberDecimal) {
         return Value(numericArg.getDecimal().ln());
     }
 
@@ -2158,7 +2155,7 @@ Value ExpressionLog::evaluateInternal(Variables* vars) const {
                           << baseDouble,
             (baseDouble > 0 && baseDouble != 1) || std::isnan(baseDouble));
 
-    if(argVal.getType() == NumberDecimal || baseVal.getType() == NumberDecimal) {
+    if (argVal.getType() == NumberDecimal || baseVal.getType() == NumberDecimal) {
         Decimal128 argDecimal = argVal.coerceToDecimal();
         Decimal128 baseDecimal = baseVal.coerceToDecimal();
         return Value(argDecimal.log(baseDecimal));
@@ -2180,7 +2177,7 @@ Value ExpressionLog10::evaluateNumericArg(const Value& numericArg) const {
             str::stream() << "$log10's argument must be a positive number, but is " << argDouble,
             argDouble > 0 || std::isnan(argDouble));
 
-    if(numericArg.getType() == NumberDecimal) {
+    if (numericArg.getType() == NumberDecimal) {
         return Value(numericArg.getDecimal().log10());
     }
 

@@ -201,7 +201,7 @@ public:
     /**
      * This function returns the standard deviation
      */
-     //TODO
+    // TODO
 
     /**
      * This set of functions converts a Decimal128 to a certain integer type with a
